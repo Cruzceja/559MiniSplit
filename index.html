@@ -25,16 +25,607 @@ header{
 }
 .phone{
  color:white;
- font-size:25px;
- margin-top:8px;
+ font-size:28px;
+ margin-top:14px;
 }
 .container{
- padding:25px;
- max-width:700px;
+ max-width:650px;
  margin:auto;
+ padding:25px;
 }
 .btn{
  width:100%;
+ background:white;
+ border:0;
+ border-radius:25px;
+ padding:28px 15px;
+ margin:10px 0;
+ font-size:20px;
+ font-weight:bold;
+ box-shadow:0 5px 15px #ccc;
+}
+.card{
+ background:white;
+ border-radius:24px;
+ padding:25px;
+ margin:20px 0;
+ box-shadow:0 4px 12px #ddd;
+}
+input,textarea,select{
+ width:100%;
+ padding:15px;
+ margin:7px 0;
+ border:1px solid #ccc;
+ border-radius:12px;
+ font-size:16px;
+}
+textarea{min-height:90px}
+.save{
+ background:#075e2c;
+ color:white;
+ border:0;
+ width:100%;
+ padding:17px;
+ border-radius:14px;
+ font-size:18px;
+ font-weight:bold;
+ margin-top:10px;
+}
+.cancel{
+ background:#ddd;
+ color:#111;
+ border:0;
+ width:100%;
+ padding:14px;
+ border-radius:14px;
+ font-size:16px;
+ margin-top:8px;
+}
+.item{
+ border-top:1px solid #ddd;
+ padding:18px 0;
+}
+.item:first-child{border-top:0}
+.name{
+ font-size:20px;
+ font-weight:bold;
+}
+.link{
+ color:#075ca8;
+ text-decoration:none;
+ font-weight:bold;
+}
+.badge{
+ display:inline-block;
+ padding:5px 9px;
+ border-radius:8px;
+ background:#eee;
+ margin:4px 2px;
+ font-size:13px;
+}
+.actions{
+ display:flex;
+ gap:7px;
+ margin-top:10px;
+}
+.actions a{
+ flex:1;
+ text-align:center;
+ padding:10px 4px;
+ background:#eee;
+ border-radius:10px;
+ text-decoration:none;
+ color:#111;
+}
+.hidden{display:none}
+h2{font-size:28px}
+.total{
+ font-size:22px;
+ font-weight:bold;
+ margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<img src="logo.png" class="logo" alt="559 Mini-Split">
+<div class="phone">559-367-7050</div>
+</header>
+
+<div class="container">
+
+<button class="btn" onclick="showForm('clientForm')">
++ NUEVO CLIENTE
+</button>
+
+<button class="btn" onclick="openQuote()">
++ NUEVA COTIZACIÓN
+</button>
+
+<button class="btn" onclick="openJob()">
++ NUEVO TRABAJO
+</button>
+
+<div id="clientForm" class="card hidden">
+<h2>Nuevo Cliente</h2>
+
+<input id="cname" placeholder="Nombre del cliente">
+<input id="cphone" type="tel" placeholder="Teléfono">
+<input id="caddress" placeholder="Dirección">
+<textarea id="cnotes" placeholder="Notas"></textarea>
+
+<button class="save" onclick="saveClient()">
+GUARDAR CLIENTE
+</button>
+
+<button class="cancel" onclick="hideForm('clientForm')">
+Cancelar
+</button>
+</div>
+
+<div id="quoteForm" class="card hidden">
+<h2>Nueva Cotización</h2>
+
+<select id="qclient"></select>
+
+<select id="qequipment">
+<option value="">Seleccionar equipo</option>
+<option>1 Ton</option>
+<option>1.5 Ton</option>
+<option>2 Ton</option>
+<option>2.5 Ton</option>
+<option>3 Ton</option>
+<option>Multi-Zone</option>
+<option>Otro</option>
+</select>
+
+<input id="qbrand" placeholder="Marca / Modelo">
+
+<textarea id="qdescription"
+placeholder="Descripción del trabajo"></textarea>
+
+<input id="qmaterials"
+placeholder="Materiales incluidos">
+
+<input id="qprice"
+type="number"
+step="0.01"
+placeholder="Precio total $">
+
+<textarea id="qnotes"
+placeholder="Notas de la cotización"></textarea>
+
+<button class="save" onclick="saveQuote()">
+GUARDAR COTIZACIÓN
+</button>
+
+<button class="cancel" onclick="hideForm('quoteForm')">
+Cancelar
+</button>
+</div>
+
+<div id="jobForm" class="card hidden">
+<h2>Nuevo Trabajo</h2>
+
+<select id="jclient"></select>
+
+<select id="jtype">
+<option value="">Tipo de trabajo</option>
+<option>Instalación</option>
+<option>Servicio</option>
+<option>Reparación</option>
+<option>Mantenimiento</option>
+<option>Diagnóstico</option>
+<option>Otro</option>
+</select>
+
+<input id="jequipment"
+placeholder="Equipo / Marca / Tonelaje">
+
+<input id="jdate"
+type="date">
+
+<input id="jprice"
+type="number"
+step="0.01"
+placeholder="Precio $">
+
+<textarea id="jdescription"
+placeholder="Descripción del trabajo"></textarea>
+
+<textarea id="jnotes"
+placeholder="Notas"></textarea>
+
+<button class="save" onclick="saveJob()">
+GUARDAR TRABAJO
+</button>
+
+<button class="cancel" onclick="hideForm('jobForm')">
+Cancelar
+</button>
+</div>
+
+<div class="card">
+<h2>Historial de Clientes</h2>
+<div id="clientList"></div>
+</div>
+
+<div class="card">
+<h2>Cotizaciones</h2>
+<div id="quoteList"></div>
+</div>
+
+<div class="card">
+<h2>Trabajos</h2>
+<div id="jobList"></div>
+</div>
+
+</div>
+
+<script>
+
+let clients =
+JSON.parse(localStorage.getItem("clients") || "[]");
+
+let quotes =
+JSON.parse(localStorage.getItem("quotes") || "[]");
+
+let jobs =
+JSON.parse(localStorage.getItem("jobs") || "[]");
+
+function showForm(id){
+ document.getElementById(id).classList.remove("hidden");
+ document.getElementById(id).scrollIntoView({
+  behavior:"smooth"
+ });
+}
+
+function hideForm(id){
+ document.getElementById(id).classList.add("hidden");
+}
+
+function cleanPhone(p){
+ return (p || "").replace(/\D/g,"");
+}
+
+function escapeHTML(v){
+ return String(v || "")
+ .replace(/&/g,"&amp;")
+ .replace(/</g,"&lt;")
+ .replace(/>/g,"&gt;")
+ .replace(/"/g,"&quot;")
+ .replace(/'/g,"&#039;");
+}
+
+function today(){
+ return new Date().toLocaleDateString();
+}
+
+function saveClient(){
+
+ let name=document.getElementById("cname").value.trim();
+ let phone=document.getElementById("cphone").value.trim();
+ let address=document.getElementById("caddress").value.trim();
+ let notes=document.getElementById("cnotes").value.trim();
+
+ if(!name){
+  alert("Escribe el nombre del cliente.");
+  return;
+ }
+
+ clients.push({
+  id:Date.now(),
+  name:name,
+  phone:phone,
+  address:address,
+  notes:notes,
+  date:today()
+ });
+
+ localStorage.setItem("clients",JSON.stringify(clients));
+
+ document.getElementById("cname").value="";
+ document.getElementById("cphone").value="";
+ document.getElementById("caddress").value="";
+ document.getElementById("cnotes").value="";
+
+ hideForm("clientForm");
+ renderAll();
+}
+
+function clientOptions(){
+
+ let options='<option value="">Seleccionar cliente</option>';
+
+ clients.forEach(c=>{
+  options +=
+  '<option value="'+c.id+'">'+
+  escapeHTML(c.name)+
+  '</option>';
+ });
+
+ document.getElementById("qclient").innerHTML=options;
+ document.getElementById("jclient").innerHTML=options;
+}
+
+function getClient(id){
+
+ return clients.find(c =>
+  String(c.id) === String(id)
+ );
+
+}
+
+function openQuote(){
+
+ if(!clients.length){
+  alert("Primero agrega un cliente.");
+  return;
+ }
+
+ clientOptions();
+ showForm("quoteForm");
+}
+
+function saveQuote(){
+
+ let clientId=document.getElementById("qclient").value;
+ let equipment=document.getElementById("qequipment").value;
+ let brand=document.getElementById("qbrand").value.trim();
+ let description=document.getElementById("qdescription").value.trim();
+ let materials=document.getElementById("qmaterials").value.trim();
+ let price=document.getElementById("qprice").value;
+ let notes=document.getElementById("qnotes").value.trim();
+
+ if(!clientId){
+  alert("Selecciona un cliente.");
+  return;
+ }
+
+ quotes.unshift({
+  id:Date.now(),
+  clientId:clientId,
+  equipment:equipment,
+  brand:brand,
+  description:description,
+  materials:materials,
+  price:price,
+  notes:notes,
+  status:"Pendiente",
+  date:today()
+ });
+
+ localStorage.setItem("quotes",JSON.stringify(quotes));
+
+ document.getElementById("qequipment").value="";
+ document.getElementById("qbrand").value="";
+ document.getElementById("qdescription").value="";
+ document.getElementById("qmaterials").value="";
+ document.getElementById("qprice").value="";
+ document.getElementById("qnotes").value="";
+
+ hideForm("quoteForm");
+ renderAll();
+}
+
+function openJob(){
+
+ if(!clients.length){
+  alert("Primero agrega un cliente.");
+  return;
+ }
+
+ clientOptions();
+
+ document.getElementById("jdate").value =
+ new Date().toISOString().split("T")[0];
+
+ showForm("jobForm");
+}
+
+function saveJob(){
+
+ let clientId=document.getElementById("jclient").value;
+ let type=document.getElementById("jtype").value;
+ let equipment=document.getElementById("jequipment").value.trim();
+ let date=document.getElementById("jdate").value;
+ let price=document.getElementById("jprice").value;
+ let description=document.getElementById("jdescription").value.trim();
+ let notes=document.getElementById("jnotes").value.trim();
+
+ if(!clientId){
+  alert("Selecciona un cliente.");
+  return;
+ }
+
+ jobs.unshift({
+  id:Date.now(),
+  clientId:clientId,
+  type:type,
+  equipment:equipment,
+  date:date,
+  price:price,
+  description:description,
+  notes:notes,
+  status:"Pendiente"
+ });
+
+ localStorage.setItem("jobs",JSON.stringify(jobs));
+
+ hideForm("jobForm");
+ renderAll();
+}
+
+function renderClients(){
+
+ let box=document.getElementById("clientList");
+
+ if(!clients.length){
+  box.innerHTML="Todavía no hay clientes.";
+  return;
+ }
+
+ box.innerHTML="";
+
+ clients.slice().reverse().forEach(c=>{
+
+  let phone=cleanPhone(c.phone);
+  let map=
+  "https://www.google.com/maps/search/?api=1&query="+
+  encodeURIComponent(c.address || "");
+
+  box.innerHTML += `
+  <div class="item">
+
+   <div class="name">${escapeHTML(c.name)}</div>
+
+   ${c.phone ?
+   `📞 <a class="link"
+   href="tel:${phone}">
+   ${escapeHTML(c.phone)}
+   </a><br>` : ""}
+
+   ${c.address ?
+   `📍 ${escapeHTML(c.address)}<br>` : ""}
+
+   ${c.notes ?
+   `📝 ${escapeHTML(c.notes)}<br>` : ""}
+
+   <small>Agregado: ${escapeHTML(c.date)}</small>
+
+   <div class="actions">
+
+   ${c.phone ?
+   `<a href="tel:${phone}">📞 Llamar</a>` : ""}
+
+   ${c.phone ?
+   `<a href="sms:${phone}">💬 Mensaje</a>` : ""}
+
+   ${c.address ?
+   `<a href="${map}" target="_blank">📍 Maps</a>` : ""}
+
+   </div>
+
+  </div>`;
+ });
+
+}
+
+function renderQuotes(){
+
+ let box=document.getElementById("quoteList");
+
+ if(!quotes.length){
+  box.innerHTML="Todavía no hay cotizaciones.";
+  return;
+ }
+
+ box.innerHTML="";
+
+ quotes.forEach(q=>{
+
+  let c=getClient(q.clientId);
+
+  box.innerHTML += `
+  <div class="item">
+
+  <div class="name">
+  ${c ? escapeHTML(c.name) : "Cliente"}
+  </div>
+
+  <span class="badge">
+  ${escapeHTML(q.status)}
+  </span>
+
+  ${q.equipment ?
+  `<br>❄️ ${escapeHTML(q.equipment)}` : ""}
+
+  ${q.brand ?
+  ` — ${escapeHTML(q.brand)}` : ""}
+
+  ${q.description ?
+  `<br>🔧 ${escapeHTML(q.description)}` : ""}
+
+  ${q.materials ?
+  `<br>📦 ${escapeHTML(q.materials)}` : ""}
+
+  ${q.price ?
+  `<div class="total">$${Number(q.price).toFixed(2)}</div>` : ""}
+
+  ${q.notes ?
+  `<br>📝 ${escapeHTML(q.notes)}` : ""}
+
+  <br><small>${escapeHTML(q.date)}</small>
+
+  </div>`;
+ });
+
+}
+
+function renderJobs(){
+
+ let box=document.getElementById("jobList");
+
+ if(!jobs.length){
+  box.innerHTML="Todavía no hay trabajos.";
+  return;
+ }
+
+ box.innerHTML="";
+
+ jobs.forEach(j=>{
+
+  let c=getClient(j.clientId);
+
+  box.innerHTML += `
+  <div class="item">
+
+  <div class="name">
+  ${c ? escapeHTML(c.name) : "Cliente"}
+  </div>
+
+  ${j.type ?
+  `<span class="badge">${escapeHTML(j.type)}</span>` : ""}
+
+  <span class="badge">
+  ${escapeHTML(j.status)}
+  </span>
+
+  ${j.equipment ?
+  `<br>❄️ ${escapeHTML(j.equipment)}` : ""}
+
+  ${j.description ?
+  `<br>🔧 ${escapeHTML(j.description)}` : ""}
+
+  ${j.price ?
+  `<div class="total">$${Number(j.price).toFixed(2)}</div>` : ""}
+
+  ${j.notes ?
+  `<br>📝 ${escapeHTML(j.notes)}` : ""}
+
+  ${j.date ?
+  `<br><small>📅 ${escapeHTML(j.date)}</small>` : ""}
+
+  </div>`;
+ });
+
+}
+
+function renderAll(){
+ clientOptions();
+ renderClients();
+ renderQuotes();
+ renderJobs();
+}
+
+renderAll();
+
+</script>
+
+</body>
+</html> width:100%;
  background:white;
  border:0;
  border-radius:22px;
